@@ -379,11 +379,51 @@ h1,h2,h3,h4,.label,.badge { font-family: 'Syne', sans-serif; }
   #timer-bar { flex-wrap: wrap; gap: 8px; }
   .main-container { padding: 16px 10px 40px; }
 }
+
+/* CUSTOM CONFIRM MODAL */
+#confirm-modal {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); z-index: 999;
+  align-items: center; justify-content: center;
+}
+#confirm-modal.show { display: flex; }
+#confirm-box {
+  background: var(--card); border-radius: 14px;
+  padding: 28px 32px; max-width: 380px; width: 90%;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+  border: 1.5px solid var(--border);
+  text-align: center;
+}
+#confirm-box h3 { font-size: 18px; margin-bottom: 10px; color: var(--text); }
+#confirm-box p { font-size: 14px; color: var(--text-muted); margin-bottom: 22px; line-height: 1.5; }
+.confirm-btns { display: flex; gap: 10px; justify-content: center; }
+.confirm-btns button {
+  padding: 10px 28px; border-radius: 9px;
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer; border: none; transition: all 0.15s;
+}
+#confirm-yes { background: var(--gold); color: var(--navy); }
+#confirm-yes:hover { background: var(--gold-light); }
+#confirm-no { background: var(--border); color: var(--text); }
+#confirm-no:hover { opacity: 0.8; }
 </style>
 </head>
 <body>
 
 <!-- TOP CREDIT BAR -->
+
+<!-- CUSTOM CONFIRM MODAL -->
+<div id="confirm-modal">
+  <div id="confirm-box">
+    <h3 id="confirm-title">Submit Exam?</h3>
+    <p id="confirm-msg">Are you sure you want to submit?</p>
+    <div class="confirm-btns">
+      <button id="confirm-yes" onclick="modalConfirm()">✓ Yes, Submit</button>
+      <button id="confirm-no" onclick="modalCancel()">✗ Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="credit-bar">
   <span>Villar, Kim Cedrick C.</span> &nbsp;|&nbsp;
   BSIT &ndash; IT252 &nbsp;|&nbsp;
@@ -506,61 +546,110 @@ const QUESTIONS_MASTER = {
         "A physical arrangement of cables in a star pattern",
         "A type of network topology for large organizations"
       ],
-      ans: 0,
-      slide: "Slide 3", diff: "easy"
+      ans: 0, slide: "Slide 3", diff: "easy",
+      explain: "Layered architecture breaks the entire networking process into manageable sub-tasks, each handled by a dedicated layer. This separation of concerns makes design, troubleshooting, and interoperability much simpler.",
+      why: [
+        { opt: "A model where the network process is divided into sub-tasks", correct: true,  reason: "This is the exact definition — the whole network process is split into smaller sub-tasks, each assigned to a specific layer." },
+        { opt: "A model where all network processes run on one layer",        correct: false, reason: "The whole point of layered architecture is the opposite — it separates processes across multiple distinct layers." },
+        { opt: "A physical arrangement of cables in a star pattern",          correct: false, reason: "That describes a Star network topology, which is a physical layout concept, not layered architecture." },
+        { opt: "A type of network topology for large organizations",          correct: false, reason: "Network topologies (Bus, Ring, Star, etc.) describe device connectivity, not the layered model concept." }
+      ]
     },
     {
       q: "What does OSI stand for?",
-      opts: [
-        "Open Software Interface",
-        "Open Systems Interconnection",
-        "Organizational Systems Integration",
-        "Open Standard Implementation"
-      ],
-      ans: 1,
-      slide: "Slide 4", diff: "easy"
+      opts: ["Open Software Interface","Open Systems Interconnection","Organizational Systems Integration","Open Standard Implementation"],
+      ans: 1, slide: "Slide 4", diff: "easy",
+      explain: "OSI stands for Open Systems Interconnection. It is a conceptual framework developed by ISO to standardize network communication into 7 layers so different vendors' systems can interoperate.",
+      why: [
+        { opt: "Open Software Interface",          correct: false, reason: "'Software Interface' is not part of the name — OSI is about system interconnection, not software interfaces." },
+        { opt: "Open Systems Interconnection",     correct: true,  reason: "The full name is Open Systems Interconnection, defined by ISO to enable standardized communication across different systems." },
+        { opt: "Organizational Systems Integration", correct: false, reason: "This is a fabricated expansion — OSI has nothing to do with organizational integration." },
+        { opt: "Open Standard Implementation",     correct: false, reason: "While OSI is an open standard, the word 'Implementation' is incorrect — it's 'Interconnection'." }
+      ]
     },
     {
       q: "Which OSI layer is responsible for data encryption and ensures data is in a usable format?",
-      opts: ["Session Layer (Layer 5)", "Application Layer (Layer 7)", "Presentation Layer (Layer 6)", "Transport Layer (Layer 4)"],
-      ans: 2,
-      slide: "Slide 5", diff: "medium"
+      opts: ["Session Layer (Layer 5)","Application Layer (Layer 7)","Presentation Layer (Layer 6)","Transport Layer (Layer 4)"],
+      ans: 2, slide: "Slide 5", diff: "medium",
+      explain: "The Presentation Layer (Layer 6) is the 'syntax layer' — it handles data translation, encryption/decryption, and compression so that data arriving from the network is in a format the application can use.",
+      why: [
+        { opt: "Session Layer (Layer 5)",      correct: false, reason: "The Session layer manages connection sessions (establishing, maintaining, terminating) — not data formatting or encryption." },
+        { opt: "Application Layer (Layer 7)",  correct: false, reason: "The Application layer provides network services to end-user applications (HTTP, FTP), but does not handle encryption itself." },
+        { opt: "Presentation Layer (Layer 6)", correct: true,  reason: "Layer 6 ensures data is in a usable format and handles encryption/decryption. Protocols here include SSL and JPEG." },
+        { opt: "Transport Layer (Layer 4)",    correct: false, reason: "The Transport layer handles end-to-end delivery and segmentation (TCP/UDP), not encryption or data formatting." }
+      ]
     },
     {
       q: "Which OSI layer decides which physical path the data will take?",
-      opts: ["Data Link Layer", "Transport Layer", "Physical Layer", "Network Layer"],
-      ans: 3,
-      slide: "Slide 5", diff: "medium"
+      opts: ["Data Link Layer","Transport Layer","Physical Layer","Network Layer"],
+      ans: 3, slide: "Slide 5", diff: "medium",
+      explain: "The Network Layer (Layer 3) is responsible for logical addressing (IP addresses) and routing — it determines the best physical path for packets to travel from source to destination.",
+      why: [
+        { opt: "Data Link Layer",  correct: false, reason: "The Data Link layer handles framing and MAC addressing within a single network segment — it does not determine routing paths across networks." },
+        { opt: "Transport Layer",  correct: false, reason: "The Transport layer handles end-to-end delivery and segmentation (TCP/UDP), not path selection between networks." },
+        { opt: "Physical Layer",   correct: false, reason: "The Physical layer transmits raw bits over a medium. It has no intelligence for deciding paths — it just sends whatever it receives." },
+        { opt: "Network Layer",    correct: true,  reason: "Layer 3 uses IP addresses and routing protocols to determine the best path across multiple networks for data to travel." }
+      ]
     },
     {
       q: "Which OSI layer transmits raw bit streams over the physical medium?",
-      opts: ["Data Link Layer", "Network Layer", "Physical Layer", "Session Layer"],
-      ans: 2,
-      slide: "Slide 5", diff: "easy"
+      opts: ["Data Link Layer","Network Layer","Physical Layer","Session Layer"],
+      ans: 2, slide: "Slide 5", diff: "easy",
+      explain: "The Physical Layer (Layer 1) deals with the actual hardware transmission — it converts bits into electrical signals, light pulses, or radio waves and sends them over cables, fiber, or wireless media.",
+      why: [
+        { opt: "Data Link Layer", correct: false, reason: "The Data Link layer formats data into frames and manages MAC addressing — it hands off to the Physical layer for actual bit transmission." },
+        { opt: "Network Layer",   correct: false, reason: "The Network layer handles logical addressing and routing at the packet level, not raw bit transmission." },
+        { opt: "Physical Layer",  correct: true,  reason: "Layer 1 transmits raw bit streams (0s and 1s) over the physical medium using electrical, optical, or radio signals." },
+        { opt: "Session Layer",   correct: false, reason: "The Session layer manages communication sessions between applications — it operates at a much higher level than bit transmission." }
+      ]
     },
     {
       q: "Which of the following protocols belongs to the OSI Application Layer (Layer 7)?",
-      opts: ["TCP", "IP", "HTTP", "PPP"],
-      ans: 2,
-      slide: "Slide 6", diff: "medium"
+      opts: ["TCP","IP","HTTP","PPP"],
+      ans: 2, slide: "Slide 6", diff: "medium",
+      explain: "HTTP (HyperText Transfer Protocol) is an Application Layer protocol used by web browsers and servers to transfer web pages. It directly serves end-user applications.",
+      why: [
+        { opt: "TCP",  correct: false, reason: "TCP (Transmission Control Protocol) operates at Layer 4 (Transport) — it handles reliable, ordered delivery of data segments." },
+        { opt: "IP",   correct: false, reason: "IP (Internet Protocol) operates at Layer 3 (Network) — it handles logical addressing and packet routing." },
+        { opt: "HTTP", correct: true,  reason: "HTTP is a Layer 7 Application protocol — it defines how web clients request and receive web pages from servers." },
+        { opt: "PPP",  correct: false, reason: "PPP (Point-to-Point Protocol) operates at Layer 2 (Data Link) — it is used for direct connections between two network nodes." }
+      ]
     },
     {
       q: "Which protocol is specifically associated with the OSI Transport Layer for reliable, ordered delivery?",
-      opts: ["IP", "HTTP", "TCP", "Ethernet"],
-      ans: 2,
-      slide: "Slide 6", diff: "medium"
+      opts: ["IP","HTTP","TCP","Ethernet"],
+      ans: 2, slide: "Slide 6", diff: "medium",
+      explain: "TCP (Transmission Control Protocol) operates at Layer 4 (Transport). It guarantees reliable, ordered, and error-checked delivery of data by using acknowledgments, sequencing, and retransmission.",
+      why: [
+        { opt: "IP",       correct: false, reason: "IP operates at Layer 3 (Network) and handles routing — it is connectionless and does not guarantee delivery." },
+        { opt: "HTTP",     correct: false, reason: "HTTP operates at Layer 7 (Application) — it defines web communication rules, not delivery guarantees." },
+        { opt: "TCP",      correct: true,  reason: "TCP is the Layer 4 Transport protocol that provides reliable, connection-oriented, ordered data delivery with error correction." },
+        { opt: "Ethernet", correct: false, reason: "Ethernet operates at Layer 2 (Data Link) — it defines how data is framed and transmitted within a local network segment." }
+      ]
     },
     {
       q: "Which layer in the TCP/IP model is responsible for moving packets from source to destination and provides routing and internetworking?",
-      opts: ["Application Layer", "Transport Layer", "Internet Layer", "Network Interface Layer"],
-      ans: 2,
-      slide: "Slide 9", diff: "hard"
+      opts: ["Application Layer","Transport Layer","Internet Layer","Network Interface Layer"],
+      ans: 2, slide: "Slide 9", diff: "hard",
+      explain: "The Internet Layer in TCP/IP corresponds to the OSI Network Layer. It uses IP addressing to move packets across different networks and select routes — it is the core of internetworking.",
+      why: [
+        { opt: "Application Layer",       correct: false, reason: "The Application layer handles user-facing protocols (HTTP, DNS, SMTP) — not packet routing." },
+        { opt: "Transport Layer",         correct: false, reason: "The Transport layer handles process-to-process delivery and segmentation (TCP/UDP) — not inter-network routing." },
+        { opt: "Internet Layer",          correct: true,  reason: "The Internet layer uses IP (IPv4/IPv6), ICMP, and ARP to route packets from source to destination across multiple networks." },
+        { opt: "Network Interface Layer", correct: false, reason: "The Network Interface layer handles hardware access and local data framing (Ethernet) — not routing between networks." }
+      ]
     },
     {
       q: "How many layers does the TCP/IP model have?",
-      opts: ["7", "5", "3", "4"],
-      ans: 3,
-      slide: "Slide 9", diff: "easy"
+      opts: ["7","5","3","4"],
+      ans: 3, slide: "Slide 9", diff: "easy",
+      explain: "The TCP/IP model has exactly 4 layers: Application (top), Transport, Internet, and Network Interface (bottom). This is more practical than OSI's 7-layer model and is the actual foundation of the internet.",
+      why: [
+        { opt: "7", correct: false, reason: "7 layers belong to the OSI model, not TCP/IP. TCP/IP consolidates several OSI layers together." },
+        { opt: "5", correct: false, reason: "No major standard uses exactly 5 layers. This is a distractor between OSI (7) and TCP/IP (4)." },
+        { opt: "3", correct: false, reason: "3 layers would omit critical separation — TCP/IP needs at minimum 4 distinct functional layers." },
+        { opt: "4", correct: true,  reason: "TCP/IP has 4 layers: Application, Transport, Internet, and Network Interface — the framework underlying all modern internet communication." }
+      ]
     },
     {
       q: "Which of the following is a key difference between the OSI and TCP/IP models?",
@@ -570,31 +659,50 @@ const QUESTIONS_MASTER = {
         "OSI was developed by DARPA (US Dept. of Defense)",
         "TCP/IP does not support routing protocols"
       ],
-      ans: 1,
-      slide: "Slide 13", diff: "medium"
+      ans: 1, slide: "Slide 13", diff: "medium",
+      explain: "OSI separates Application, Presentation, and Session into three distinct layers (5, 6, 7). TCP/IP merges all three into a single Application layer, making it simpler but less granular.",
+      why: [
+        { opt: "TCP/IP has 7 layers while OSI has 4",                          correct: false, reason: "This is completely reversed — OSI has 7 layers and TCP/IP has 4 layers." },
+        { opt: "OSI has separate Presentation and Session layers (CORRECT)",   correct: true,  reason: "OSI's layers 5 (Session) and 6 (Presentation) are merged into TCP/IP's single Application layer — a key structural difference." },
+        { opt: "OSI was developed by DARPA",                                   correct: false, reason: "OSI was developed by ISO. DARPA developed the TCP/IP model for the US Department of Defense." },
+        { opt: "TCP/IP does not support routing protocols",                    correct: false, reason: "TCP/IP actively uses routing protocols (via the Internet layer with IP, ICMP, etc.) — it is the basis of all internet routing." }
+      ]
     },
     {
       q: "Which network type is typically used in homes, offices, and schools to connect devices within a single building?",
-      opts: ["WAN", "MAN", "LAN", "CAN"],
-      ans: 2,
-      slide: "Slide 16", diff: "easy"
+      opts: ["WAN","MAN","LAN","CAN"],
+      ans: 2, slide: "Slide 16", diff: "easy",
+      explain: "A LAN (Local Area Network) covers a small geographic area like a single building, floor, or campus. It connects devices using Ethernet and Wi-Fi and is the standard network in homes, offices, and schools.",
+      why: [
+        { opt: "WAN", correct: false, reason: "WAN (Wide Area Network) covers cities, countries, or continents — far too large for a single building." },
+        { opt: "MAN", correct: false, reason: "MAN (Metropolitan Area Network) covers a city or metro area — larger than a single building." },
+        { opt: "LAN", correct: true,  reason: "LAN is specifically designed for small, localized areas like buildings or campuses, using Ethernet or Wi-Fi to share resources." },
+        { opt: "CAN", correct: false, reason: "CAN (Campus Area Network) connects multiple buildings across a campus — still larger than a single building LAN." }
+      ]
     },
     {
       q: "A Metropolitan Area Network (MAN) covers a geographic area that is:",
-      opts: [
-        "Smaller than a LAN",
-        "Larger than a WAN",
-        "Larger than a LAN but smaller than a WAN",
-        "The same size as a CAN"
-      ],
-      ans: 2,
-      slide: "Slide 19", diff: "medium"
+      opts: ["Smaller than a LAN","Larger than a WAN","Larger than a LAN but smaller than a WAN","The same size as a CAN"],
+      ans: 2, slide: "Slide 19", diff: "medium",
+      explain: "A MAN fills the gap between LAN and WAN. It typically covers a city or metro area — larger than a single-building LAN but not as vast as a national or international WAN.",
+      why: [
+        { opt: "Smaller than a LAN",                  correct: false, reason: "A MAN is much larger than a LAN. LANs cover single rooms or buildings; MANs cover entire cities." },
+        { opt: "Larger than a WAN",                   correct: false, reason: "WANs are the largest networks, spanning countries or continents. A MAN is smaller than a WAN." },
+        { opt: "Larger than LAN but smaller than WAN", correct: true,  reason: "By definition, a MAN sits between a LAN (building) and a WAN (country/continent) in terms of geographic coverage." },
+        { opt: "The same size as a CAN",              correct: false, reason: "A CAN (Campus Area Network) is typically smaller than a MAN — CAN covers a campus while MAN covers a city." }
+      ]
     },
     {
       q: "What type of network provides block-level access to data storage and is typically used with disk arrays and tape libraries?",
-      opts: ["VPN", "EPN", "SAN", "MAN"],
-      ans: 2,
-      slide: "Slide 21", diff: "medium"
+      opts: ["VPN","EPN","SAN","MAN"],
+      ans: 2, slide: "Slide 21", diff: "medium",
+      explain: "A SAN (Storage Area Network) is a specialized, high-speed network that provides servers with block-level access to storage devices such as disk arrays and tape libraries, making them appear locally attached.",
+      why: [
+        { opt: "VPN", correct: false, reason: "A VPN creates secure encrypted tunnels over the internet for remote access — it is not a storage architecture." },
+        { opt: "EPN", correct: false, reason: "An EPN (Enterprise Private Network) connects an organization's locations securely but does not specialize in storage access." },
+        { opt: "SAN", correct: true,  reason: "SAN provides high-speed, block-level storage access to servers, making remote disk arrays and tape libraries appear as locally attached drives." },
+        { opt: "MAN", correct: false, reason: "A MAN is a geographic area network covering a city — it has nothing to do with storage management." }
+      ]
     },
     {
       q: "A Virtual Private Network (VPN) allows you to:",
@@ -604,8 +712,14 @@ const QUESTIONS_MASTER = {
         "Block all external internet access for security",
         "Convert analog signals to digital for ISP connection"
       ],
-      ans: 1,
-      slide: "Slide 23", diff: "easy"
+      ans: 1, slide: "Slide 23", diff: "easy",
+      explain: "A VPN creates an encrypted tunnel over the public internet, allowing devices to communicate as if they were on the same private network. It provides security and privacy without physical private cables.",
+      why: [
+        { opt: "Create a physical private cable",                    correct: false, reason: "VPNs are virtual — they use existing internet infrastructure, not physical dedicated cables." },
+        { opt: "Create a secure encrypted connection over Internet", correct: true,  reason: "VPN tunnels encrypt data sent over the public internet, making shared networks behave like private ones." },
+        { opt: "Block all external internet access",                 correct: false, reason: "VPNs route and encrypt traffic, not block it. A firewall blocks traffic; a VPN secures it." },
+        { opt: "Convert analog signals to digital",                  correct: false, reason: "That is the function of a modem (modulator-demodulator), not a VPN." }
+      ]
     },
     {
       q: "In a Star topology, what happens if the central hub or switch fails?",
@@ -615,20 +729,38 @@ const QUESTIONS_MASTER = {
         "The entire network goes down",
         "Nothing — it is fully fault tolerant"
       ],
-      ans: 2,
-      slide: "Slide 24", diff: "medium"
+      ans: 2, slide: "Slide 24", diff: "medium",
+      explain: "In a Star topology, all devices connect through a single central device (hub/switch). This creates a single point of failure — if the central device fails, all connected devices lose network access simultaneously.",
+      why: [
+        { opt: "Only the directly connected device fails",   correct: false, reason: "In a star, ALL devices connect through the central node. If the center fails, every device is affected — not just one." },
+        { opt: "Data automatically reroutes to another path",correct: false, reason: "Star topology has no redundant paths. Automatic rerouting is a feature of mesh networks, not star." },
+        { opt: "The entire network goes down",               correct: true,  reason: "The central hub/switch is a single point of failure in a star — its failure disconnects all devices simultaneously." },
+        { opt: "Nothing — it is fully fault tolerant",       correct: false, reason: "Star is NOT fault tolerant at the center. Individual device failures are isolated, but the center is critical." }
+      ]
     },
     {
       q: "In a fully connected mesh topology with 6 devices, how many connections are required?",
-      opts: ["6", "12", "15", "18"],
-      ans: 2,
-      slide: "Slide 24", diff: "hard"
+      opts: ["6","12","15","18"],
+      ans: 2, slide: "Slide 24", diff: "hard",
+      explain: "The formula for full mesh connections is n(n-1)/2. With 6 devices: 6 × 5 / 2 = 15 connections. Every device must connect directly to every other device.",
+      why: [
+        { opt: "6",  correct: false, reason: "6 connections would only form a simple ring. Full mesh requires far more connections for direct paths between all nodes." },
+        { opt: "12", correct: false, reason: "12 = 6×2, not the correct formula. The formula is n(n-1)/2 = 6×5/2 = 15." },
+        { opt: "15", correct: true,  reason: "Using n(n-1)/2: 6×5÷2 = 15. Each of the 6 devices needs 5 direct connections, but each link is shared, so divide by 2." },
+        { opt: "18", correct: false, reason: "18 = 6×3, which doesn't follow any standard mesh formula. The correct answer is 15." }
+      ]
     },
     {
       q: "Fiber-optic cable encodes data as:",
-      opts: ["Electrical impulses through copper wire", "Radio waves broadcast through air", "Pulses of light through glass or plastic fiber", "Magnetic signals through coated media"],
-      ans: 2,
-      slide: "Slide 26", diff: "easy"
+      opts: ["Electrical impulses through copper wire","Radio waves broadcast through air","Pulses of light through glass or plastic fiber","Magnetic signals through coated media"],
+      ans: 2, slide: "Slide 26", diff: "easy",
+      explain: "Fiber-optic cable is a guided transmission medium that encodes data as pulses of light traveling through glass or plastic fibers. This allows extremely high-speed transmission over long distances.",
+      why: [
+        { opt: "Electrical impulses through copper wire", correct: false, reason: "Electrical impulses describe twisted-pair and coaxial cables — copper-based guided media, not fiber." },
+        { opt: "Radio waves broadcast through air",       correct: false, reason: "Radio waves are unguided wireless transmission — fiber-optic is a guided physical medium, not wireless." },
+        { opt: "Pulses of light through glass/plastic",   correct: true,  reason: "Fiber-optic cables use light pulses (photons) traveling through glass or plastic fibers — enabling high bandwidth and EMI immunity." },
+        { opt: "Magnetic signals through coated media",   correct: false, reason: "Magnetic encoding is used in hard disk drives and magnetic tape storage, not network transmission media." }
+      ]
     },
     {
       q: "In a twisted-pair cable, wires are twisted together primarily to:",
@@ -638,8 +770,14 @@ const QUESTIONS_MASTER = {
         "Increase signal transmission speed",
         "Allow wireless signal transmission"
       ],
-      ans: 1,
-      slide: "Slide 27", diff: "medium"
+      ans: 1, slide: "Slide 27", diff: "medium",
+      explain: "Twisting wire pairs cancels out electromagnetic interference (EMI) through a principle called noise cancellation — each half-twist reverses the orientation of the EMI pickup, causing opposing signals to cancel each other.",
+      why: [
+        { opt: "Increase the maximum cable length",   correct: false, reason: "Twisting does not extend cable length. Maximum distances depend on cable category (e.g., Cat5e = 100m), not the twist itself." },
+        { opt: "Reduce electromagnetic interference", correct: true,  reason: "Twisting pairs together causes EMI fields induced on each wire to cancel each other out — this is the primary engineering reason for the twist." },
+        { opt: "Increase signal transmission speed",  correct: false, reason: "Speed is determined by cable category and conductor quality, not twisting. Twisting is about noise reduction, not bandwidth." },
+        { opt: "Allow wireless signal transmission",  correct: false, reason: "Twisted-pair is a wired, guided medium. Wireless transmission requires radio wave technology — completely different." }
+      ]
     },
     {
       q: "Which of the following is NOT one of the four main criteria for choosing network media?",
@@ -649,8 +787,14 @@ const QUESTIONS_MASTER = {
         "Number of devices connected to the network",
         "Cost of the media and installation"
       ],
-      ans: 2,
-      slide: "Slide 31", diff: "hard"
+      ans: 2, slide: "Slide 31", diff: "hard",
+      explain: "The four criteria are: (1) maximum signal distance, (2) installation environment, (3) amount of data and required speed, and (4) cost. The number of connected devices is not one of these four criteria.",
+      why: [
+        { opt: "Maximum distance",        correct: false, reason: "This IS one of the four criteria — different media have different maximum range (e.g., fiber > coaxial > UTP)." },
+        { opt: "Installation environment",correct: false, reason: "This IS one of the four criteria — indoor, outdoor, industrial, and underwater environments require different media choices." },
+        { opt: "Number of devices",       correct: true,  reason: "Device count is NOT listed as one of the four criteria. The actual criteria focus on distance, environment, speed/data, and cost." },
+        { opt: "Cost of media and installation", correct: false, reason: "This IS one of the four criteria — budget often determines whether fiber-optic, coaxial, or twisted-pair is selected." }
+      ]
     },
     {
       q: "What effect does greater bandwidth have on a transmission medium?",
@@ -660,50 +804,179 @@ const QUESTIONS_MASTER = {
         "It reduces the maximum distance the signal travels",
         "It increases transmission impairment"
       ],
-      ans: 1,
-      slide: "Slide 32", diff: "medium"
+      ans: 1, slide: "Slide 32", diff: "medium",
+      explain: "Bandwidth represents the capacity of a transmission medium — a wider bandwidth means more data can be transmitted per unit of time, resulting in higher throughput and faster network speeds.",
+      why: [
+        { opt: "It decreases signal clarity over distance", correct: false, reason: "Signal clarity over distance is affected by attenuation, not bandwidth. These are separate concepts." },
+        { opt: "It allows a higher data transmission rate",  correct: true,  reason: "Greater bandwidth = greater data-carrying capacity = higher transmission rate. Bandwidth and throughput are directly proportional." },
+        { opt: "It reduces the maximum signal distance",    correct: false, reason: "Maximum distance is determined by attenuation and medium type, not bandwidth. Higher bandwidth doesn't shorten range." },
+        { opt: "It increases transmission impairment",      correct: false, reason: "Transmission impairment (noise, attenuation, distortion) is a separate design factor unrelated to available bandwidth." }
+      ]
     }
   ],
   tf: [
-    { q: "Layered architecture divides network processes into smaller sub-tasks, each assigned to a specific layer to perform dedicated functions.", ans: true, slide: "Slide 3", diff: "easy" },
-    { q: "OSI stands for Open Systems Interconnection.", ans: true, slide: "Slide 4", diff: "easy" },
-    { q: "The Transport Layer (Layer 4) of the OSI model is responsible for data encryption.", ans: false, slide: "Slide 5", diff: "medium", explain: "Data encryption is handled by the Presentation Layer (Layer 6), not the Transport Layer." },
-    { q: "The Data Link Layer defines the format of data frames on the network and operates at Layer 2 of the OSI model.", ans: true, slide: "Slide 5", diff: "medium" },
-    { q: "The TCP/IP model has seven layers.", ans: false, slide: "Slide 9", diff: "easy", explain: "The TCP/IP model has 4 layers: Application, Transport, Internet, and Network Interface." },
-    { q: "The OSI model was developed by DARPA (US Department of Defense Advanced Research Projects Agency).", ans: false, slide: "Slide 13", diff: "medium", explain: "The OSI model was developed by ISO (International Organization for Standardization). DARPA developed the TCP/IP model." },
-    { q: "A Wireless Local Area Network (WLAN) uses wireless communication technologies such as Wi-Fi to connect devices within a limited area.", ans: true, slide: "Slide 17", diff: "easy" },
-    { q: "In a Bus topology, failure of the main backbone cable disables the entire network.", ans: true, slide: "Slide 24", diff: "medium" },
-    { q: "Fiber-optic cable can carry digital information at very high speeds over long distances.", ans: true, slide: "Slide 29", diff: "easy" },
-    { q: "Due to transmission impairment, the received signal always appears identical to the transmitted signal.", ans: false, slide: "Slide 32", diff: "hard", explain: "Transmission impairment means the received signal may be distorted or degraded, so it does NOT appear identical to the transmitted signal." }
+    {
+      q: "Layered architecture divides network processes into smaller sub-tasks, each assigned to a specific layer to perform dedicated functions.",
+      ans: true, slide: "Slide 3", diff: "easy",
+      explain: "TRUE. This is the definition of layered architecture — the whole network process is broken into sub-tasks, each handled by a dedicated layer. This enables modular design and easy troubleshooting.",
+      why: [
+        { opt: "TRUE",  correct: true,  reason: "Layered architecture explicitly divides the network process into sub-tasks assigned to specific layers — each layer performs only its dedicated function." },
+        { opt: "FALSE", correct: false, reason: "The statement is accurate and matches the definition. No part of it is incorrect." }
+      ]
+    },
+    {
+      q: "OSI stands for Open Systems Interconnection.",
+      ans: true, slide: "Slide 4", diff: "easy",
+      explain: "TRUE. OSI stands for Open Systems Interconnection. It was developed by ISO as a reference model to standardize how different computer systems communicate over a network.",
+      why: [
+        { opt: "TRUE",  correct: true,  reason: "The full, official expansion of OSI is Open Systems Interconnection — this is unambiguously correct." },
+        { opt: "FALSE", correct: false, reason: "There is no alternative expansion for OSI. Open Systems Interconnection is the only correct meaning." }
+      ]
+    },
+    {
+      q: "The Transport Layer (Layer 4) of the OSI model is responsible for data encryption.",
+      ans: false, slide: "Slide 5", diff: "medium",
+      explain: "FALSE. Data encryption is a function of the Presentation Layer (Layer 6), not the Transport Layer. Layer 4 (Transport) handles end-to-end data delivery, segmentation, flow control, and error correction using protocols like TCP and UDP.",
+      why: [
+        { opt: "TRUE",  correct: false, reason: "Layer 4 handles segmentation and reliable delivery (TCP/UDP). Encryption belongs to Layer 6 (Presentation), specifically protocols like SSL/TLS." },
+        { opt: "FALSE", correct: true,  reason: "Data encryption is a Presentation Layer (Layer 6) responsibility. The Transport Layer focuses on delivery reliability, not data security transformation." }
+      ]
+    },
+    {
+      q: "The Data Link Layer defines the format of data frames on the network and operates at Layer 2 of the OSI model.",
+      ans: true, slide: "Slide 5", diff: "medium",
+      explain: "TRUE. The Data Link Layer (Layer 2) defines how data is formatted into frames, handles MAC (physical) addressing, error detection, and manages access to the shared physical medium.",
+      why: [
+        { opt: "TRUE",  correct: true,  reason: "Layer 2 is the Data Link Layer. It defines frame format, MAC addressing, and error detection — exactly as stated." },
+        { opt: "FALSE", correct: false, reason: "Both parts of the statement are correct: it defines data frame format AND it is Layer 2. Neither part is wrong." }
+      ]
+    },
+    {
+      q: "The TCP/IP model has seven layers.",
+      ans: false, slide: "Slide 9", diff: "easy",
+      explain: "FALSE. The TCP/IP model has 4 layers: Application, Transport, Internet, and Network Interface. It is the OSI model that has 7 layers. TCP/IP was intentionally designed to be simpler.",
+      why: [
+        { opt: "TRUE",  correct: false, reason: "Seven layers describes the OSI model. TCP/IP consolidates those into 4 layers by merging multiple OSI layers together." },
+        { opt: "FALSE", correct: true,  reason: "TCP/IP has exactly 4 layers. Seven layers is the OSI model's count, not TCP/IP's." }
+      ]
+    },
+    {
+      q: "The OSI model was developed by DARPA (US Department of Defense Advanced Research Projects Agency).",
+      ans: false, slide: "Slide 13", diff: "medium",
+      explain: "FALSE. The OSI model was developed by ISO (International Organization for Standardization). DARPA developed the TCP/IP model. These are two different models from two different organizations.",
+      why: [
+        { opt: "TRUE",  correct: false, reason: "DARPA created TCP/IP, not OSI. Confusing the two is a common error — each model was developed by a different organization with different goals." },
+        { opt: "FALSE", correct: true,  reason: "OSI was developed by ISO. DARPA created the TCP/IP suite for the US military's ARPANET, which eventually became the internet." }
+      ]
+    },
+    {
+      q: "A Wireless Local Area Network (WLAN) uses wireless communication technologies such as Wi-Fi to connect devices within a limited area.",
+      ans: true, slide: "Slide 17", diff: "easy",
+      explain: "TRUE. A WLAN is a LAN that uses wireless technologies (primarily Wi-Fi / IEEE 802.11) instead of physical cables to connect devices. It operates within a limited geographic area like a building or campus.",
+      why: [
+        { opt: "TRUE",  correct: true,  reason: "This is the exact definition of WLAN — it uses Wi-Fi and other wireless protocols to provide local area connectivity without cables." },
+        { opt: "FALSE", correct: false, reason: "The statement accurately describes WLAN. Wi-Fi is the primary technology used, and 'limited area' correctly distinguishes it from WAN or MAN." }
+      ]
+    },
+    {
+      q: "In a Bus topology, failure of the main backbone cable disables the entire network.",
+      ans: true, slide: "Slide 24", diff: "medium",
+      explain: "TRUE. In a Bus topology, all devices share a single backbone cable. If this cable breaks or fails anywhere, the signal path is interrupted and all connected devices lose network connectivity.",
+      why: [
+        { opt: "TRUE",  correct: true,  reason: "The bus is a single shared medium — any break along the cable disrupts communication for every device on the network simultaneously." },
+        { opt: "FALSE", correct: false, reason: "Unlike star topology where one device failure is isolated, a bus has no redundancy. One cable failure = total network failure." }
+      ]
+    },
+    {
+      q: "Fiber-optic cable can carry digital information at very high speeds over long distances.",
+      ans: true, slide: "Slide 29", diff: "easy",
+      explain: "TRUE. Fiber-optic cable uses light pulses through glass/plastic fibers, enabling extremely high bandwidth (terabits per second) over distances far exceeding copper cables, making it the standard for backbone and WAN connections.",
+      why: [
+        { opt: "TRUE",  correct: true,  reason: "Fiber-optic's light-based transmission provides unmatched bandwidth and distance compared to copper. It is the backbone of modern internet infrastructure." },
+        { opt: "FALSE", correct: false, reason: "Fiber-optic's high-speed, long-distance capability is a well-established fact. It outperforms copper in both speed and range." }
+      ]
+    },
+    {
+      q: "Due to transmission impairment, the received signal always appears identical to the transmitted signal.",
+      ans: false, slide: "Slide 32", diff: "hard",
+      explain: "FALSE. Transmission impairment (caused by attenuation, noise, and distortion) means the received signal is often degraded compared to what was sent. The received signal may be weaker, distorted, or corrupted.",
+      why: [
+        { opt: "TRUE",  correct: false, reason: "Transmission impairment specifically means the signal degrades during transmission. Attenuation weakens it, noise corrupts it, and distortion warps it — so it is NOT identical." },
+        { opt: "FALSE", correct: true,  reason: "Transmission impairment ensures the received signal differs from the transmitted one. This is why error correction, repeaters, and amplifiers are necessary." }
+      ]
+    }
   ],
   enum: [
     {
       q: "Enumerate the 7 layers of the OSI model from Layer 7 (top/Application) down to Layer 1 (bottom/Physical).",
-      ans: ["Application", "Presentation", "Session", "Transport", "Network", "Data Link", "Physical"],
-      slide: "Slide 5", diff: "medium", count: 7
+      ans: ["Application","Presentation","Session","Transport","Network","Data Link","Physical"],
+      slide: "Slide 5", diff: "medium", count: 7,
+      explain: "The 7 OSI layers top-to-bottom are: Application (Layer 7) → Presentation (Layer 6) → Session (Layer 5) → Transport (Layer 4) → Network (Layer 3) → Data Link (Layer 2) → Physical (Layer 1). Memory aid: 'All People Seem To Need Data Processing.'"
     },
     {
       q: "Enumerate the 4 layers of the TCP/IP model from the top (Application) down to the bottom (Network Interface/Access) layer.",
-      ans: ["Application", "Transport", "Internet", "Network Interface"],
-      slide: "Slide 9", diff: "medium", count: 4
+      ans: ["Application","Transport","Internet","Network Interface"],
+      slide: "Slide 9", diff: "medium", count: 4,
+      explain: "TCP/IP's 4 layers top-to-bottom are: Application → Transport → Internet → Network Interface. Unlike OSI's 7 layers, TCP/IP merges Session, Presentation, and Application into one, and Physical + Data Link into the Network Interface layer."
     },
     {
       q: "Enumerate at least 5 types of network topologies discussed in the lesson.",
-      ans: ["Bus", "Star", "Ring", "Mesh", "Fully Connected", "Tree", "Hybrid"],
-      slide: "Slide 24", diff: "hard", count: 5, partial: true
+      ans: ["Bus","Star","Ring","Mesh","Fully Connected","Tree","Hybrid"],
+      slide: "Slide 24", diff: "hard", count: 5, partial: true,
+      explain: "The topologies covered are: Bus (single shared cable), Star (all connect to central hub), Ring (circular loop), Mesh (partial multi-path), Fully Connected (every device to every other), Tree (hierarchical star-bus hybrid), and Hybrid (combination of two or more topologies)."
     }
   ],
   id: [
-    { q: "This is a seven-layered architecture model where all layers work collaboratively to transmit data, developed by ISO.", ans: "OSI Model", slide: "Slide 4", diff: "easy" },
-    { q: "This is the OSI layer described as the 'human-computer interaction layer' where applications can access network services.", ans: "Application Layer", slide: "Slide 5", diff: "easy" },
-    { q: "This OSI layer maintains connections and is responsible for controlling ports and sessions between communicating systems.", ans: "Session Layer", slide: "Slide 5", diff: "medium" },
-    { q: "In the TCP/IP model, this is the bottom layer that controls the hardware and media that constitute the network (equivalent to OSI Physical + Data Link).", ans: "Network Interface Layer", slide: "Slide 9", diff: "easy" },
-    { q: "This network type spans a single building, floor, or campus, and uses Ethernet or Wi-Fi to connect devices for resource sharing.", ans: "LAN", slide: "Slide 16", diff: "medium" },
-    { q: "This network type connects multiple buildings within a limited geographic area such as a university campus, corporate campus, or military base.", ans: "CAN", slide: "Slide 18", diff: "medium" },
-    { q: "This technology allows users to create a secure encrypted connection to another network over the Internet, making public networks behave like private ones.", ans: "VPN", slide: "Slide 23", diff: "easy" },
-    { q: "This type of cable groups wires in pairs and twists them together to reduce electromagnetic interference; color-coded for identification.", ans: "Twisted-Pair Cable", slide: "Slide 27", diff: "medium" },
-    { q: "This is one of the earliest types of network cabling developed; it features a single rigid copper core conductor surrounded by insulation and a metallic shield.", ans: "Coaxial Cable", slide: "Slide 28", diff: "easy" },
-    { q: "This design factor in transmission media refers to the condition where the received signal may be degraded or destroyed because it does not appear identical to the transmitted signal.", ans: "Transmission Impairment", slide: "Slide 32", diff: "hard" }
+    {
+      q: "This is a seven-layered architecture model where all layers work collaboratively to transmit data, developed by ISO.",
+      ans: "OSI Model", slide: "Slide 4", diff: "easy",
+      explain: "The OSI Model (Open Systems Interconnection) was created by ISO to standardize network communication into 7 distinct layers, enabling devices from different vendors to communicate using common protocols."
+    },
+    {
+      q: "This is the OSI layer described as the 'human-computer interaction layer' where applications can access network services.",
+      ans: "Application Layer", slide: "Slide 5", diff: "easy",
+      explain: "The Application Layer (Layer 7) is the topmost OSI layer and the one end users directly interact with. It provides network services to applications (e.g., HTTP for browsers, FTP for file transfer, DNS for name resolution)."
+    },
+    {
+      q: "This OSI layer maintains connections and is responsible for controlling ports and sessions between communicating systems.",
+      ans: "Session Layer", slide: "Slide 5", diff: "medium",
+      explain: "The Session Layer (Layer 5) establishes, manages, and terminates communication sessions between two systems. It handles synchronization, dialog control, and session checkpointing — APIs and sockets are session-layer interfaces."
+    },
+    {
+      q: "In the TCP/IP model, this is the bottom layer that controls the hardware and media that constitute the network (equivalent to OSI Physical + Data Link).",
+      ans: "Network Interface Layer", slide: "Slide 9", diff: "easy",
+      explain: "The Network Interface Layer (also called Network Access Layer) is the bottom of TCP/IP. It combines the functions of OSI's Physical and Data Link layers — managing hardware access, framing (Ethernet), and physical signal transmission."
+    },
+    {
+      q: "This network type spans a single building, floor, or campus, and uses Ethernet or Wi-Fi to connect devices for resource sharing.",
+      ans: "LAN", slide: "Slide 16", diff: "medium",
+      explain: "LAN stands for Local Area Network. It is confined to a small geographic area (building, floor, or campus) and uses Ethernet cables or Wi-Fi to share resources like files, printers, and internet connections among connected devices."
+    },
+    {
+      q: "This network type connects multiple buildings within a limited geographic area such as a university campus, corporate campus, or military base.",
+      ans: "CAN", slide: "Slide 18", diff: "medium",
+      explain: "CAN stands for Campus Area Network. It sits between a LAN and MAN in size — connecting multiple buildings within a defined campus area using fiber-optic or wireless links, providing high-speed inter-building connectivity."
+    },
+    {
+      q: "This technology allows users to create a secure encrypted connection to another network over the Internet, making public networks behave like private ones.",
+      ans: "VPN", slide: "Slide 23", diff: "easy",
+      explain: "VPN (Virtual Private Network) creates an encrypted tunnel over the public internet. Data travels through this tunnel as if the user is directly connected to a private network, providing security and privacy on shared infrastructure."
+    },
+    {
+      q: "This type of cable groups wires in pairs and twists them together to reduce electromagnetic interference; color-coded for identification.",
+      ans: "Twisted-Pair Cable", slide: "Slide 27", diff: "medium",
+      explain: "Twisted-Pair Cable pairs wires and twists them to cancel out electromagnetic interference (EMI) through noise cancellation. The color-coding helps identify matching pairs at both cable ends. It is the most common LAN cabling (UTP Cat5e/Cat6)."
+    },
+    {
+      q: "This is one of the earliest types of network cabling developed; it features a single rigid copper core conductor surrounded by insulation and a metallic shield.",
+      ans: "Coaxial Cable", slide: "Slide 28", diff: "easy",
+      explain: "Coaxial Cable was among the first network cables, featuring a central copper conductor, dielectric insulator, metallic braided shield, and outer jacket. The shield provides good EMI protection. Used in early Ethernet, cable TV, and broadband."
+    },
+    {
+      q: "This design factor in transmission media refers to the condition where the received signal may be degraded or destroyed because it does not appear identical to the transmitted signal.",
+      ans: "Transmission Impairment", slide: "Slide 32", diff: "hard",
+      explain: "Transmission Impairment is any phenomenon that degrades signal quality during transmission. It includes attenuation (signal weakening), distortion (shape change), and noise (external interference). It is a key consideration in media design because it limits effective range and data integrity."
+    }
   ],
   sit: [
     {
@@ -890,8 +1163,6 @@ const QUESTIONS_MASTER = {
 };
 
 // ============================================================
-// STATE
-// ============================================================
 let questions = [];
 let answers = {};
 let flags = {};
@@ -926,7 +1197,8 @@ function buildQuestions() {
     const shuffledIdx = shuffle(optIndices);
     const newOpts = shuffledIdx.map(i => q.opts[i]);
     const newAns = shuffledIdx.indexOf(q.ans);
-    questions.push({ ...q, type: 'mc', opts: newOpts, ans: newAns, section: 'mc', num: globalNum++, origNum: i + 1 });
+    const newWhy = q.why ? shuffledIdx.map(i => q.why[i]) : undefined;
+    questions.push({ ...q, type: 'mc', opts: newOpts, ans: newAns, why: newWhy, section: 'mc', num: globalNum++, origNum: i + 1 });
   });
 
   // TF
@@ -1221,14 +1493,24 @@ function hasAnswer(q) {
 // SUBMIT
 // ============================================================
 function confirmSubmit() {
+  if (submitted) return;
   const answered = questions.filter(q => hasAnswer(q)).length;
   const unanswered = questions.length - answered;
-  if (!submitted) {
-    const msg = unanswered > 0
-      ? `You have ${unanswered} unanswered question(s). Submit anyway?`
-      : 'Submit your exam?';
-    if (confirm(msg)) doSubmit();
-  }
+  const msg = unanswered > 0
+    ? `You still have ${unanswered} unanswered question(s). Submit anyway?`
+    : 'Submit your exam? This cannot be undone.';
+  document.getElementById('confirm-title').textContent = unanswered > 0 ? '⚠️ Unanswered Questions' : '📋 Submit Exam';
+  document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('confirm-modal').classList.add('show');
+}
+
+function modalConfirm() {
+  document.getElementById('confirm-modal').classList.remove('show');
+  doSubmit();
+}
+
+function modalCancel() {
+  document.getElementById('confirm-modal').classList.remove('show');
 }
 
 function doSubmit() {
@@ -1316,8 +1598,10 @@ function showResult(q) {
     html += `<div class="res-answer">Correct Answer: <b>${labels[q.ans]}. ${q.opts[q.ans]}</b></div>`;
     if (!isCorr && a !== undefined) html += `<div class="res-answer wrong-icon">Your Answer: <b>${labels[a]}. ${q.opts[a]}</b></div>`;
 
-    if (q.type === 'sit') {
+    if (q.explain) {
       html += `<div class="res-explain" style="margin-top:8px"><b>Explanation:</b> ${q.explain}</div>`;
+    }
+    if (q.why && q.why.length) {
       html += `<div class="res-why">`;
       q.why.forEach((w, i) => {
         html += `<div class="res-why-item"><span class="${w.correct ? 'correct-icon' : 'wrong-icon'}">${w.correct ? '✓' : '✗'}</span> <b>${labels[i]}. ${w.opt}:</b> ${w.reason}</div>`;
@@ -1339,7 +1623,15 @@ function showResult(q) {
 
     let html = `<div class="res-title ${isCorr ? 'correct-icon' : 'wrong-icon'}">${isCorr ? '✓ Correct!' : '✗ Incorrect'}</div>`;
     html += `<div class="res-answer">Correct Answer: <b>${q.ans ? 'TRUE' : 'FALSE'}</b></div>`;
-    if (q.explain && !isCorr) html += `<div class="res-explain">${q.explain}</div>`;
+    if (!isCorr && a !== undefined) html += `<div class="res-answer wrong-icon">Your Answer: <b>${a ? 'TRUE' : 'FALSE'}</b></div>`;
+    if (q.explain) html += `<div class="res-explain" style="margin-top:8px"><b>Explanation:</b> ${q.explain}</div>`;
+    if (q.why && q.why.length) {
+      html += `<div class="res-why">`;
+      q.why.forEach((w) => {
+        html += `<div class="res-why-item"><span class="${w.correct ? 'correct-icon' : 'wrong-icon'}">${w.correct ? '✓' : '✗'}</span> <b>${w.opt}:</b> ${w.reason}</div>`;
+      });
+      html += `</div>`;
+    }
     resBox.innerHTML = html;
     resBox.classList.add('show', isCorr ? 'correct-res' : 'wrong-res');
 
@@ -1353,6 +1645,7 @@ function showResult(q) {
     let html = `<div class="res-title ${isCorr ? 'correct-icon' : 'wrong-icon'}">${isCorr ? '✓ Correct!' : '✗ Incorrect'}</div>`;
     html += `<div class="res-answer">Correct Answer: <b>${Array.isArray(q.ans) ? q.ans.join(' / ') : q.ans}</b></div>`;
     if (!isCorr && a) html += `<div class="res-answer wrong-icon">Your Answer: <b>${a}</b></div>`;
+    if (q.explain) html += `<div class="res-explain" style="margin-top:8px">${q.explain}</div>`;
     resBox.innerHTML = html;
     resBox.classList.add('show', isCorr ? 'correct-res' : 'wrong-res');
 
@@ -1365,6 +1658,7 @@ function showResult(q) {
 
     let html = `<div class="res-title ${isFullCorr ? 'correct-icon' : 'wrong-icon'}">${correct}/${total} correct</div>`;
     html += `<div class="res-answer">Expected answers: <b>${q.ans.join(', ')}</b></div>`;
+    if (q.explain) html += `<div class="res-explain" style="margin-top:8px">${q.explain}</div>`;
     resBox.innerHTML = html;
     resBox.classList.add('show', isFullCorr ? 'correct-res' : (correct > 0 ? 'partial-res' : 'wrong-res'));
   }
